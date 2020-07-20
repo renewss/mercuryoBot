@@ -8,8 +8,11 @@ const User = require('./src/model');
 
 const app = express();
 const bot = new Telegraf(process.env.BOT_TOKEN);
-app.use(bot.webhookCallback('/secret-cb'));
-bot.telegram.setWebhook(`${process.env.WEBHOOK_URL}secret-cb`, null, 5000);
+app.use(bot.webhookCallback(`/${process.env.BOT_TOKEN}`));
+(async function () {
+    const b = await bot.startWebhook(`${process.env.WEBHOOK_URL}${process.env.BOT_TOKEN}`, null, 5000);
+    console.log(b);
+})();
 
 app.use(bodyParser.json());
 app.get('/keepAlive', (req, res, next) => {
