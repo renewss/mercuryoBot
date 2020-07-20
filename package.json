@@ -1,0 +1,23 @@
+{
+    "name": "mercuryo",
+    "version": "1.0.0",
+    "description": "",
+    "main": "server.js",
+    "dependencies": {
+        "axios": "^0.19.2",
+        "connect-redis": "^5.0.0",
+        "dotenv": "^8.2.0",
+        "express": "^4.17.1",
+        "mongoose": "^5.9.25",
+        "puppeteer": "^5.1.0",
+        "telegraf": "^3.38.0"
+    },
+    "devDependencies": {
+        "nodemon": "^2.0.4"
+    },
+    "scripts": {
+        "start:dev": "nodemon server.js"
+    },
+    "author": "renewss",
+    "license": "ISC"
+}
