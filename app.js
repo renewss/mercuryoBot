@@ -1,22 +1,32 @@
 const Telegraf = require('telegraf');
 const express = require('express');
 const axios = require('axios');
+const bodyParser = require('body-parser');
 require('dotenv').config();
 const control = require('./src/control.js');
 const User = require('./src/model');
 
 const app = express();
 const bot = new Telegraf(process.env.BOT_TOKEN);
+if (process.env.NODE_ENV === 'production') {
+    bot.setWebhook(`${process.env.WEBHOOK_URL}${process.env.BOT_TOKEN}`);
+}
 
+app.use(bodyParser.json());
 app.get('/keepAlive', (req, res, next) => {
+    console.log('KEEP-ALIVE endpoint hit');
     res.send({
         status: 'success',
     });
 });
-
-(async function () {
-    axios.get();
+app.post(`/${process.env.BOT_TOKEN}`, (req, res) => {
+    bot.processUpdate(req.body);
 });
+
+async function kplv() {
+    await axios.get(`${process.env.WEBHOOK_URL}keepAlive`);
+}
+setInterval(kplv, 1000 * 60 * 25);
 
 bot.start(control.auth, control.mainMenu);
 bot.on('text', async (ctx, next) => {
