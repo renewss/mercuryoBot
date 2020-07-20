@@ -22,7 +22,6 @@ module.exports = async (bot) => {
         },
     };
     users.forEach((user) => {
-        console.log(user.mailing);
         if (user.mailing) {
             const [valRangeS, valRangeF] = [user.value[2], user.value[3]];
             const [percentRangeS, percentRangeF] = [user.percent[2], user.percent[3]];
@@ -30,7 +29,6 @@ module.exports = async (bot) => {
             const diffPercent =
                 ((currentData[user.percent[0]][user.percent[1]] - user.percent[4] * 1) / (user.percent[4] * 1)) * 100;
 
-            console.log('Mailing', diffValue, diffPercent);
             if (valRangeS <= diffValue && valRangeF >= diffValue) {
                 bot.telegram.sendMessage(
                     user.chatId,
