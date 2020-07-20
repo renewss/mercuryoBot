@@ -7,7 +7,7 @@ exports.fetch = async () => {
     try {
         prevData = dcf(data);
         data = (await axios.get('https://api.mercuryo.io/v1.5/public/rates')).data.data.buy;
-        console.log('Info Fetched', data.BTC.RUB, data.USDT.RUB);
+        // console.log('Info Fetched', data.BTC.RUB, data.USDT.RUB);
     } catch (err) {
         console.log(err);
     }

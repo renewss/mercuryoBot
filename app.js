@@ -10,7 +10,7 @@ const app = express();
 const bot = new Telegraf(process.env.BOT_TOKEN);
 app.use(bot.webhookCallback(`/${process.env.BOT_TOKEN}`));
 (async function () {
-    const b = await bot.startWebhook(`${process.env.WEBHOOK_URL}${process.env.BOT_TOKEN}`, null, 5000);
+    const b = await bot.telegram.setWebhook(`${process.env.WEBHOOK_URL}${process.env.BOT_TOKEN}`, null, 5000);
     console.log(b);
 })();
 
