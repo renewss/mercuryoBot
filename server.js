@@ -1,5 +1,5 @@
 const mongoose = require('mongoose');
-const { bot } = require('./app');
+const { bot, app } = require('./app');
 const { fetch } = require('./src/fetcher');
 const mailing = require('./src/mailing');
 
@@ -26,6 +26,11 @@ mongoose
         console.log(err);
     }
 })();
+
+const Port = process.env.PORT || 3030;
+app.listen(Port, () => {
+    console.log(`Server is running on port ${Port}`);
+});
 
 // BOT
 bot.launch();

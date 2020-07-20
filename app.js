@@ -1,9 +1,22 @@
 const Telegraf = require('telegraf');
+const express = require('express');
+const axios = require('axios');
 require('dotenv').config();
 const control = require('./src/control.js');
 const User = require('./src/model');
 
+const app = express();
 const bot = new Telegraf(process.env.BOT_TOKEN);
+
+app.get('/keepAlive', (req, res, next) => {
+    res.send({
+        status: 'success',
+    });
+});
+
+(async function () {
+    axios.get();
+});
 
 bot.start(control.auth, control.mainMenu);
 bot.on('text', async (ctx, next) => {
@@ -73,4 +86,5 @@ bot.on('callback_query', async (ctx, next) => {
 //     }
 // });
 
+exports.app = app;
 exports.bot = bot;
