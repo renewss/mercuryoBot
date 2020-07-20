@@ -9,7 +9,7 @@ const User = require('./src/model');
 const app = express();
 const bot = new Telegraf(process.env.BOT_TOKEN);
 if (process.env.NODE_ENV === 'production') {
-    bot.setWebhook(`${process.env.WEBHOOK_URL}${process.env.BOT_TOKEN}`);
+    bot.telegram.setWebhook(`${process.env.WEBHOOK_URL}${process.env.BOT_TOKEN}`);
 }
 
 app.use(bodyParser.json());
