@@ -18,10 +18,11 @@ mongoose
 (async () => {
     try {
         await fetch();
-        setInterval(fetch, 1000 * 60);
+        setInterval(fetch, 1000 * 40);
         setInterval(() => {
             mailing(bot);
-        }, 1000 * 60);
+        }, 1000 * 40);
+        // mailing(bot);
     } catch (err) {
         console.log(err);
     }

@@ -4,7 +4,7 @@ const axios = require('axios');
 const bodyParser = require('body-parser');
 require('dotenv').config();
 const control = require('./src/control.js');
-const User = require('./src/model');
+const { User } = require('./src/model');
 
 const app = express();
 const bot = new Telegraf(process.env.BOT_TOKEN);
@@ -31,12 +31,7 @@ bot.start(control.auth, control.mainMenu);
 bot.on('text', async (ctx, next) => {
     await control.auth(ctx, next);
 
-    const user = await User.findOne({ chatId: ctx.state.id });
-    if (user.state === 'req_value') {
-        control.saveDifference(ctx, 0);
-    } else if (user.state === 'req_percent') {
-        control.saveDifference(ctx, 1);
-    }
+    control.saveDifference(ctx);
 });
 
 bot.on('callback_query', async (ctx, next) => {
@@ -66,8 +61,7 @@ bot.on('callback_query', async (ctx, next) => {
                 await control.setDifference(ctx, cbData[1], cbData[2], cbData[3]);
                 break;
             case 'mail':
-                await control.auth(ctx, next);
-                await control.toggleMailing(ctx, cbData[1]);
+                await control.deleteMailing(ctx, cbData[1]);
                 break;
             case 'delete':
                 await ctx.telegram.deleteMessage(

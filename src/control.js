@@ -1,5 +1,5 @@
 // TODO review DIFF SET system, implement mailing
-const User = require('./model');
+const { User, Diff } = require('./model');
 const fetch = require('./fetcher');
 const utils = require('./utils');
 const { findOne } = require('./model');
@@ -136,35 +136,41 @@ exports.fiatMenu = (ctx, param, crypt) => {
 // SET Functions
 exports.setDifference = async (ctx, param, crypt, fiat) => {
     const user = await User.findOne({ chatId: ctx.state.id });
+    const diff = await Diff.create({ user: user._id, name: param, crypt, fiat });
+
     user.state = `req_${param}`;
-    user[param] = new Array(crypt, fiat);
-    user.mailing = true;
+    user.stateLink = diff._id;
     await user.save();
+
     sendOkMessage('Send me range.\nex.(-6 -1)', ctx);
 };
 // param  => 0 - value, 1 - percentage
-exports.saveDifference = async (ctx, param) => {
+exports.saveDifference = async (ctx) => {
     const range = ctx.update.message.text.split(' ');
     const currentData = fetch.getCurrent();
 
     if (isNaN(range[0] * 1) || isNaN(range[1] * 1)) return sendOkMessage('Use numbers please!', ctx);
+    if (range[0] * 1 < 0 || range[1] * 1 < 0) return sendOkMessage('Use positive numbers', ctx);
     else if (range[0] * 1 > range[1] * 1) return sendOkMessage('Second limit must be greater. ex. (3 10)', ctx);
 
     const user = await User.findOne({ chatId: ctx.state.id });
-    if (param) {
-        user.percent.push(range[0], range[1], currentData[user.percent[0]][user.percent[1]]);
-    } else {
-        user.value.push(range[0], range[1], currentData[user.value[0]][user.value[1]]);
-    }
+    const diff = await Diff.findById(user.stateLink);
 
+    diff.ranges = new Array(range[0] * 1, range[1] * 1);
+    diff.rate = currentData[diff.crypt][diff.fiat];
+    diff.active = true;
     user.state = 'none';
+    user.stateLink = undefined;
+
+    await diff.save();
     await user.save();
+
     sendOkMessage('Successfully updated', ctx);
 };
 
-exports.toggleMailing = async (ctx, param) => {
-    await User.findOneAndUpdate({ chatId: ctx.state.id }, { mailing: !!(param * 1) });
-    sendOkMessage('Mailing Status Changed', ctx);
+exports.deleteMailing = async (ctx, id) => {
+    await Diff.findOneAndDelete({ _id: id });
+    sendOkMessage('Mailing Deleted', ctx);
 };
 
 // Info Sender Endpoints

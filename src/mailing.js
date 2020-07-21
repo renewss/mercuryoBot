@@ -1,52 +1,54 @@
-const User = require('./model');
+const { User, Diff } = require('./model');
 const fetcher = require('./fetcher');
 
 module.exports = async (bot) => {
-    const users = await User.find();
-    if (!users) return;
+    try {
+        const usersRaw = await User.find().populate({ path: 'diffs' });
+        if (!usersRaw) return;
 
-    const current = fetcher.getCurrent();
-    const prev = fetcher.getPrev();
-    if (!current || !prev) {
-        return;
+        const users = usersRaw.filter((el) => !!el.diffs);
+
+        const currentData = fetcher.getCurrent();
+        if (!currentData) return;
+
+        users.forEach(async (user) => {
+            user.diffs.forEach(async (el) => {
+                //finding difference
+                let compare;
+                if (el.name === 'value') {
+                    compare = Math.abs(currentData[el.crypt][el.fiat] - el.rate);
+                } else {
+                    compare = Math.abs(((currentData[el.crypt][el.fiat] - el.rate) / el.rate) * 100);
+                }
+
+                if (el.ranges[0] <= compare && el.ranges[1] >= compare) {
+                    // updating db value
+                    await Diff.findOneAndUpdate({ _id: el._id }, { rate: currentData[el.crypt][el.fiat] });
+
+                    const symbol = el.name === 'value' ? el.fiat : '%';
+
+                    bot.telegram.sendMessage(
+                        user.chatId,
+                        `Hey, there was change in range ${el.ranges[0]} and ${el.ranges[1]} ${symbol}\nCurrent: ${
+                            Math.round(currentData[el.crypt][el.fiat] * 100) / 100
+                        } | Previous: ${Math.round(el.rate * 100) / 100}\nDifference:  <strong>${
+                            Math.round(compare * 100) / 100
+                        }</strong> ${symbol}\nfor <strong>${el.crypt}</strong>`,
+
+                        {
+                            parse_mode: 'HTML',
+                            reply_markup: {
+                                inline_keyboard: [
+                                    [{ text: 'Stop Mailing', callback_data: `mail_${el._id}` }],
+                                    [{ text: 'Ok', callback_data: 'delete' }],
+                                ],
+                            },
+                        }
+                    );
+                }
+            });
+        });
+    } catch (err) {
+        console.log(err);
     }
-
-    const currentData = fetcher.getCurrent();
-
-    const settings = {
-        reply_markup: {
-            inline_keyboard: [
-                [{ text: 'Ok', callback_data: 'delete' }],
-                [{ text: 'Stop Mailing', callback_data: 'mail_0' }],
-            ],
-        },
-    };
-    users.forEach((user) => {
-        if (user.mailing) {
-            const [valRangeS, valRangeF] = [user.value[2], user.value[3]];
-            const [percentRangeS, percentRangeF] = [user.percent[2], user.percent[3]];
-            const diffValue = currentData[user.value[0]][user.value[1]] - user.value[4] * 1;
-            const diffPercent =
-                ((currentData[user.percent[0]][user.percent[1]] - user.percent[4] * 1) / (user.percent[4] * 1)) * 100;
-
-            if (valRangeS <= diffValue && valRangeF >= diffValue) {
-                bot.telegram.sendMessage(
-                    user.chatId,
-                    `Hey, there was change in range ${valRangeS} and ${valRangeF} ${user.value[1]} (${
-                        Math.round(diffValue * 100) / 100
-                    } ${user.value[1]}) for ${user.value[0]}`,
-                    settings
-                );
-            }
-            if (percentRangeS <= diffPercent && percentRangeF >= diffPercent) {
-                bot.telegram.sendMessage(
-                    user.chatId,
-                    `Hey, there was change in range ${percentRangeS}% and ${percentRangeF}%  (${
-                        Math.round(diffPercent * 100) / 100
-                    } %) for ${user.percent[0]} -> ${user.percent[1]}`,
-                    settings
-                );
-            }
-        }
-    });
 };
