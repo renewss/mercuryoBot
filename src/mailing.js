@@ -31,7 +31,7 @@ module.exports = async (bot) => {
 
                     bot.telegram.sendMessage(
                         user.chatId,
-                        `Change ${el.crypt}\nRange: <strong>${el.ranges[0]} and ${
+                        `Change ${el.crypt} >> ${el.fiat}\nRange: <strong>${el.ranges[0]} and ${
                             el.ranges[1]
                         } ${symbol}</strong>\nCurrent: ${
                             Math.round(currentData[el.crypt][el.fiat] * 100) / 100

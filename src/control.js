@@ -5,7 +5,7 @@ const utils = require('./utils');
 const { findOne } = require('./model');
 
 const crypts = ['BTC', 'USDT'];
-const fiats = ['RUB'];
+const fiats = ['RUB', 'USD', 'EUR'];
 
 exports.auth = async (ctx, next) => {
     try {
