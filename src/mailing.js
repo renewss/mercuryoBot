@@ -31,13 +31,13 @@ module.exports = async (bot) => {
 
                     bot.telegram.sendMessage(
                         user.chatId,
-                        `Change ${symbol}\nRange: </strong>${el.ranges[0]} and ${
+                        `Change ${el.crypt}\nRange: <strong>${el.ranges[0]} and ${
                             el.ranges[1]
-                        } ${symbol}<strong>\nCurrent: ${
+                        } ${symbol}</strong>\nCurrent: ${
                             Math.round(currentData[el.crypt][el.fiat] * 100) / 100
                         } | Previous: ${Math.round(el.rate * 100) / 100}\nDifference:  <strong>${
                             Math.round(realDiff * 100) / 100
-                        } ${el.crypt}</strong>`,
+                        } ${symbol}</strong>`,
 
                         {
                             parse_mode: 'HTML',

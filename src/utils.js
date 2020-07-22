@@ -34,7 +34,7 @@ exports.makeTable = (arr, crypt) => {
 
     for (let row in arr) {
         for (let cell in arr[row]) {
-            table += `| ${arr[row][cell]}`;
+            table += ` | ${arr[row][cell]}`;
 
             const cellLength = JSON.stringify(arr[row][cell]).length;
             for (let k = 0; k <= spaceLengths - cellLength; k++) {

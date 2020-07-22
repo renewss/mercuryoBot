@@ -26,33 +26,26 @@ exports.auth = async (ctx, next) => {
     }
 };
 
-// Menu Level 0
-// 0
+// Main Menu
 exports.mainMenu = (ctx, next, replace = false) => {
-    const text = 'Hey, You can use buttons below!';
+    const text = '<strong>Main Menu</strong>';
     const inKey = {
-        inline_keyboard: [
-            [
-                { text: 'Current Rates', callback_data: '1_0' },
-                { text: 'Get Last Change', callback_data: '1_1' },
-            ],
-            [
-                { text: 'Set Value', callback_data: '1_2' },
-                { text: 'Set Percentage', callback_data: '1_3' },
-            ],
-        ],
+        inline_keyboard: [[{ text: 'Rates', callback_data: '0_0' }], [{ text: 'Requests', callback_data: '0_1' }]],
     };
+
     try {
         if (replace) {
             ctx.editMessageText(text, {
                 chat_id: ctx.update.callback_query.message.chat.id,
                 message_id: ctx.update.callback_query.message.message_id,
+                parse_mode: 'HTML',
                 reply_markup: inKey,
             });
 
             return;
         } else {
             ctx.reply(text, {
+                parse_mode: 'HTML',
                 reply_markup: inKey,
             });
 
@@ -61,6 +54,51 @@ exports.mainMenu = (ctx, next, replace = false) => {
     } catch (err) {
         console.log(err);
     }
+};
+
+// Menu Level 0
+// 0
+exports.rateMenu = (ctx) => {
+    const text = '<strong>Rates Menu</strong>';
+
+    ctx.editMessageText(text, {
+        chat_id: ctx.update.callback_query.message.chat.id,
+        message_id: ctx.update.callback_query.message.message_id,
+        parse_mode: 'HTML',
+        reply_markup: {
+            inline_keyboard: [
+                [
+                    { text: 'Current Rates', callback_data: '1_0' },
+                    { text: 'Get Last Change', callback_data: '1_1' },
+                ],
+                [{ text: 'Back', callback_data: 'main' }],
+            ],
+        },
+    });
+};
+
+// 0 1
+exports.reqMenu = (ctx) => {
+    const text = '<strong>Requests Menu</strong>';
+
+    ctx.editMessageText(text, {
+        chat_id: ctx.update.callback_query.message.chat.id,
+        message_id: ctx.update.callback_query.message.message_id,
+        parse_mode: 'HTML',
+        reply_markup: {
+            inline_keyboard: [
+                [
+                    { text: 'Set Value', callback_data: '1_2' },
+                    { text: 'Set Percentage', callback_data: '1_3' },
+                ],
+                [
+                    { text: 'Show All Requests', callback_data: 'request_show' },
+                    { text: 'Delete All Requests', callback_data: 'confirm_delete' },
+                ],
+                [{ text: 'Back', callback_data: 'main' }],
+            ],
+        },
+    });
 };
 
 // Menu Level 1
@@ -133,7 +171,7 @@ exports.fiatMenu = (ctx, param, crypt) => {
     });
 };
 
-// SET Functions
+// SET Endpoints (Request  Menu)
 exports.setDifference = async (ctx, param, crypt, fiat) => {
     const user = await User.findOne({ chatId: ctx.state.id });
     const diff = await Diff.create({ user: user._id, name: param, crypt, fiat });
@@ -168,6 +206,63 @@ exports.saveDifference = async (ctx) => {
     sendOkMessage('Successfully updated', ctx);
 };
 
+exports.showReqs = async (ctx) => {
+    try {
+        const user = await User.findOne({ chatId: ctx.state.id }).populate({ path: 'diffs' });
+        if (!user.diffs.length) {
+            sendOkMessage('Request List is Empty!', ctx);
+            return;
+        }
+
+        let arr = [];
+        user.diffs.forEach((el) => {
+            arr.push(new Array(el.name, el.crypt, el.fiat, `${el.ranges[0]} - ${el.ranges[1]}`));
+        });
+
+        const table = utils.makeTable(arr, '');
+
+        ctx.editMessageText(table, {
+            chat_id: ctx.update.callback_query.message.chat.id,
+            message_id: ctx.update.callback_query.message.message_id,
+            parse_mode: 'HTML',
+            reply_markup: {
+                inline_keyboard: [[{ text: 'Back', callback_data: '0_1' }]],
+            },
+        });
+    } catch (err) {
+        console.log(err);
+    }
+};
+
+exports.confirmDeleteReq = (ctx) => {
+    try {
+        ctx.editMessageText('Delete All Requests?', {
+            chat_id: ctx.update.callback_query.message.chat.id,
+            message_id: ctx.update.callback_query.message.message_id,
+            parse_mode: 'HTML',
+            reply_markup: {
+                inline_keyboard: [
+                    [{ text: 'Confirm', callback_data: 'deleteReq' }],
+                    [{ text: 'Back', callback_data: '0_1' }],
+                ],
+            },
+        });
+    } catch (err) {
+        console.log(err);
+    }
+};
+exports.deleteRequests = async (ctx) => {
+    try {
+        const user = await User.findOne({ chatId: ctx.state.id });
+
+        await Diff.deleteMany({ user: user._id });
+        sendOkMessage('Request List Deleted', ctx);
+    } catch (err) {
+        console.log(err);
+    }
+};
+
+//
 exports.deleteMailing = async (ctx, id) => {
     await Diff.findOneAndDelete({ _id: id });
     sendOkMessage('Mailing Deleted', ctx);
