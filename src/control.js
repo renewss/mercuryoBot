@@ -216,7 +216,7 @@ exports.showReqs = async (ctx) => {
 
         let arr = [];
         user.diffs.forEach((el) => {
-            arr.push(new Array(el.name, el.crypt, el.fiat, `${el.ranges[0]} - ${el.ranges[1]}`));
+            if (el.active) arr.push(new Array(el.name, el.crypt, el.fiat, `${el.ranges[0]} - ${el.ranges[1]}`));
         });
 
         const table = utils.makeTable(arr, '');
