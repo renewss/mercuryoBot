@@ -1,3 +1,8 @@
+// *****************************
+// Author : renewss
+// CONTACT: t.me/Renewss
+// *****************************
+
 const mongoose = require('mongoose');
 const { bot, app } = require('./app');
 const { fetch } = require('./src/fetcher');

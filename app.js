@@ -1,3 +1,8 @@
+// *****************************
+// Author : renewss
+// CONTACT: t.me/Renewss
+// *****************************
+
 const Telegraf = require('telegraf');
 const express = require('express');
 const axios = require('axios');

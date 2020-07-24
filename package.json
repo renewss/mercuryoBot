@@ -20,6 +20,6 @@
         "start": "node server.js",
         "start:dev": "nodemon server.js"
     },
-    "author": "renewss",
+    "author": "t.me/renewss",
     "license": "ISC"
 }
